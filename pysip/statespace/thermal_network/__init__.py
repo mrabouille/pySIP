@@ -1,3 +1,5 @@
+from .parametric_rc import Parametric_RC
+from .twti_hohi import TwTi_HoHi
 from .r2c2_qgh import R2C2Qgh
 from .twti_rwawai import TwTi_RwAwAi
 from .twti_rwrcawai import TwTi_RwRcAwAi

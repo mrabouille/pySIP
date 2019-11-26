@@ -11,6 +11,7 @@ class Io(Enum):
 
 class Par(Enum):
     THERMAL_RESISTANCE = ('Thermal resistance', 'K/W')
+    THERMAL_TRANSMITANCE = ('Thermal transmitance', 'W/K')
     THERMAL_CAPACITY = ('Thermal capacity', 'J/K')
     SOLAR_APERTURE = ('Solar aperture', 'm2')
     STATE_DEVIATION = ('State deviation', '')
