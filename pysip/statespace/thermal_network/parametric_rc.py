@@ -7,6 +7,7 @@ from ..base import RCModel
 @dataclass
 class Parametric_RC(RCModel):
     """Variable order RC model"""
+
     heavy_walls: list = field(default_factory=[0])  # (walls as _w)
     light_walls: list = field(default_factory=[0])  # (bridges as _b)
     irr: list = field(default_factory=[])  # inside is node -1, mass(if defined) is node bounds+1
@@ -25,50 +26,70 @@ class Parametric_RC(RCModel):
         self.light_walls = set(self.light_walls)
         self.irr = set(self.irr)
 
-        self.states = [('TEMPERATURE', 'x_i', 'indoor space temperature')] \
-                      + [('TEMPERATURE', 'x_w%d' % i, 'wall %d temperature' % i) for i in self.heavy_walls]
+        self.states = [('TEMPERATURE', 'x_i', 'indoor space temperature')] + [
+            ('TEMPERATURE', 'x_w%d' % i, 'wall %d temperature' % i) for i in self.heavy_walls
+        ]
         self.states += [('TEMPERATURE', 'x_m', 'internal mass temperature')] if self.mass else []
 
-        self.inputs = [('TEMPERATURE', 'Tb%d' % i, 'boundary %d temperature' % i) for i in range(self.boundary)] \
-                      + [('POWER', 'Qh', 'HVAC system heat')]
-        self.inputs += [('POWER', 'Qh%d' % i, 'Source %d heat' % i) for i in self.heat_contribution if not i == 0]
+        self.inputs = [
+            ('TEMPERATURE', 'Tb%d' % i, 'boundary %d temperature' % i) for i in range(self.boundary)
+        ] + [('POWER', 'Qh', 'HVAC system heat')]
+        self.inputs += [
+            ('POWER', 'Qh%d' % i, 'Source %d heat' % i)
+            for i in self.heat_contribution
+            if not i == 0
+        ]
 
         if self.irr:
             self.inputs.append(('POWER', 'Qgh', 'global horizontal solar radiation'))
 
         self.outputs = [('TEMPERATURE', 'x_i', 'indoor space temperature')]
 
-        self.params = [('MEASURE_DEVIATION', 'sigv', ''),
-                       ('THERMAL_CAPACITY', 'C_i', 'indoor air, indoor walls, furnitures, etc. '),
-                       ('STATE_DEVIATION', 'sigw_i', ''),
-                       ('INITIAL_MEAN', 'x0_i', ''),
-                       ('INITIAL_DEVIATION', 'sigx0_i', ''),
-                       ]
-        self.parameters = [_p['sigv'],
-                           _p['C_i'],
-                           _p['sigw_i'],
-                           _p['x0_i'],
-                           _p['sigx0_i'],
-                           ]
+        self.params = [
+            ('MEASURE_DEVIATION', 'sigv', ''),
+            ('THERMAL_CAPACITY', 'C_i', 'indoor air, indoor walls, furnitures, etc. '),
+            ('STATE_DEVIATION', 'sigw_i', ''),
+            ('INITIAL_MEAN', 'x0_i', ''),
+            ('INITIAL_DEVIATION', 'sigx0_i', ''),
+        ]
+        self.parameters = [
+            _p['sigv'],
+            _p['C_i'],
+            _p['sigw_i'],
+            _p['x0_i'],
+            _p['sigx0_i'],
+        ]
 
         heavy_w_count = len(self.heavy_walls)
         for i in self.heavy_walls:
-            self.params.extend([
-                ('THERMAL_TRANSMITANCE', 'Ho_w%d' % i, 'between the boundary %d and the wall node' % i),
-                ('THERMAL_TRANSMITANCE', 'Hi_w%d' % i, 'between the wall %d node and the indoor' % i),
-                ('THERMAL_CAPACITY', 'C_w%d' % i, 'Wall %d' % i),
-                ('STATE_DEVIATION', 'sigw_w%d' % i, ''),
-                ('INITIAL_MEAN', 'x0_w%d' % i, ''),
-                ('INITIAL_DEVIATION', 'sigx0_w%d' % i, ''),
-            ])
-            self.parameters.extend([
-                _p.get('Ho_w%d' % i, {**_p['Ho_w'], 'name': 'Ho_w%d' % i}),
-                _p.get('Hi_w%d' % i, {**_p['Hi_w'], 'name': 'Hi_w%d' % i}),
-                _p.get('C_w%d' % i, {**_p['C_w'], 'name': 'C_w%d' % i}),
-                _p.get('sigw_w%d' % i, {**_p['sigw_w'], 'name': 'sigw_w%d' % i}),
-                _p.get('x0_w%d' % i, {**_p['x0_w'], 'name': 'x0_w%d' % i}),
-                _p.get('sigx0_w%d' % i, {**_p['sigx0_w'], 'name': 'sigx0_w%d' % i}),
-            ])
+            self.params.extend(
+                [
+                    (
+                        'THERMAL_TRANSMITANCE',
+                        'Ho_w%d' % i,
+                        'between the boundary %d and the wall node' % i,
+                    ),
+                    (
+                        'THERMAL_TRANSMITANCE',
+                        'Hi_w%d' % i,
+                        'between the wall %d node and the indoor' % i,
+                    ),
+                    ('THERMAL_CAPACITY', 'C_w%d' % i, 'Wall %d' % i),
+                    ('STATE_DEVIATION', 'sigw_w%d' % i, ''),
+                    ('INITIAL_MEAN', 'x0_w%d' % i, ''),
+                    ('INITIAL_DEVIATION', 'sigx0_w%d' % i, ''),
+                ]
+            )
+            self.parameters.extend(
+                [
+                    _p.get('Ho_w%d' % i, {**_p['Ho_w'], 'name': 'Ho_w%d' % i}),
+                    _p.get('Hi_w%d' % i, {**_p['Hi_w'], 'name': 'Hi_w%d' % i}),
+                    _p.get('C_w%d' % i, {**_p['C_w'], 'name': 'C_w%d' % i}),
+                    _p.get('sigw_w%d' % i, {**_p['sigw_w'], 'name': 'sigw_w%d' % i}),
+                    _p.get('x0_w%d' % i, {**_p['x0_w'], 'name': 'x0_w%d' % i}),
+                    _p.get('sigx0_w%d' % i, {**_p['sigx0_w'], 'name': 'sigx0_w%d' % i}),
+                ]
+            )
         (
             self.index['Ho_w'],
             self.index['Hi_w'],
@@ -81,25 +102,30 @@ class Parametric_RC(RCModel):
         light_w_count = len(self.light_walls)
         for i in self.light_walls:
             self.params.append(
-                ('THERMAL_TRANSMITANCE', 'Hb_w%d' % i, 'between the boundary %d and the indoor' % i))
+                ('THERMAL_TRANSMITANCE', 'Hb_w%d' % i, 'between the boundary %d and the indoor' % i)
+            )
             self.parameters.append(_p.get('Hb_w%d' % i, {**_p['Hb_w'], 'name': 'Hb_w%d' % i}))
         self.index['Hb_w'] = [6 * heavy_w_count + i for i in range(light_w_count)]
 
         if self.mass:
-            self.params.extend([
-                ('THERMAL_TRANSMITANCE', 'H_m', 'between the indoor and the internal mass'),
-                ('THERMAL_CAPACITY', 'C_m', 'of the internal mass'),
-                ('STATE_DEVIATION', 'sigw_m', ''),
-                ('INITIAL_MEAN', 'x0_m', ''),
-                ('INITIAL_DEVIATION', 'sigx0_m', ''),
-            ])
-            self.parameters.extend([
-                _p.get('H_m%d' % i, {**_p['H_m'], 'name': 'H_m%d' % i}),
-                _p.get('C_m%d' % i, {**_p['C_m'], 'name': 'C_m%d' % i}),
-                _p.get('sigw_m%d' % i, {**_p['sigw_m'], 'name': 'sigw_m%d' % i}),
-                _p.get('x0_m%d' % i, {**_p['x0_m'], 'name': 'x0_m%d' % i}),
-                _p.get('sigx0_m%d' % i, {**_p['sigx0_m'], 'name': 'sigx0_m%d' % i}),
-            ])
+            self.params.extend(
+                [
+                    ('THERMAL_TRANSMITANCE', 'H_m', 'between the indoor and the internal mass'),
+                    ('THERMAL_CAPACITY', 'C_m', 'of the internal mass'),
+                    ('STATE_DEVIATION', 'sigw_m', ''),
+                    ('INITIAL_MEAN', 'x0_m', ''),
+                    ('INITIAL_DEVIATION', 'sigx0_m', ''),
+                ]
+            )
+            self.parameters.extend(
+                [
+                    _p.get('H_m%d' % i, {**_p['H_m'], 'name': 'H_m%d' % i}),
+                    _p.get('C_m%d' % i, {**_p['C_m'], 'name': 'C_m%d' % i}),
+                    _p.get('sigw_m%d' % i, {**_p['sigw_m'], 'name': 'sigw_m%d' % i}),
+                    _p.get('x0_m%d' % i, {**_p['x0_m'], 'name': 'x0_m%d' % i}),
+                    _p.get('sigx0_m%d' % i, {**_p['sigx0_m'], 'name': 'sigx0_m%d' % i}),
+                ]
+            )
             (
                 self.index['H_m'],
                 self.index['C_m'],
@@ -109,16 +135,22 @@ class Parametric_RC(RCModel):
             ) = [6 * heavy_w_count + light_w_count + i for i in range(5)]
 
         for i in self.heat_contribution:
-            self.params.append(('COEFFICIENT', 'Cv' + str(i + 1), 'source %d heating contribution' % i))
+            self.params.append(
+                ('COEFFICIENT', 'Cv' + str(i + 1), 'source %d heating contribution' % i)
+            )
             self.parameters.append(_p.get('Cv%d' % i, {**_p['Cv'], 'name': 'Cv%d' % i}))
-        self.index['Cv'] = [6 * heavy_w_count + light_w_count + 5 * self.mass + i for i in
-                            range(len(self.heat_contribution))]
+        self.index['Cv'] = [
+            6 * heavy_w_count + light_w_count + 5 * self.mass + i
+            for i in range(len(self.heat_contribution))
+        ]
 
         for i in self.irr:
             self.params.append(('SOLAR_APERTURE', 'As' + str(i + 1), 'of the node %d (m2)' % i))
             self.parameters.append(_p.get('As%d' % i, {**_p['As'], 'name': 'As%d' % i}))
-        self.index['As'] = [6 * heavy_w_count + light_w_count + 5 * self.mass + len(self.heat_contribution) + i for i in
-                            range(len(self.irr))]
+        self.index['As'] = [
+            6 * heavy_w_count + light_w_count + 5 * self.mass + len(self.heat_contribution) + i
+            for i in range(len(self.irr))
+        ]
 
         super().__post_init__()
 
@@ -142,14 +174,7 @@ class Parametric_RC(RCModel):
             self.dP0['sigx0_m'][loc, loc] = 1.0
 
     def update_continuous_ssm(self):
-        (
-            sigv,
-            C_i,
-            sigw_i,
-            x0_i,
-            sigx0_i,
-            *unpack,
-        ) = self.parameters.theta
+        (sigv, C_i, sigw_i, x0_i, sigx0_i, *unpack,) = self.parameters.theta
 
         Ho_w = [unpack[i] for i in self.index['Ho_w']]
         Hi_w = [unpack[i] for i in self.index['Hi_w']]
@@ -162,14 +187,20 @@ class Parametric_RC(RCModel):
         Cv = [unpack[i] for i in self.index['Cv']]
         As = [unpack[i] for i in self.index['As']]
 
-        (
-            H_m,
-            C_m,
-            sigw_m,
-            x0_m,
-            sigx0_m,
-        ) = [unpack[i] for i in [self.index['H_m'], self.index['C_m'], self.index['sigw_m'], self.index['x0_m'],
-                                 self.index['sigx0_m']]] if self.mass else [None] * 5
+        (H_m, C_m, sigw_m, x0_m, sigx0_m,) = (
+            [
+                unpack[i]
+                for i in [
+                    self.index['H_m'],
+                    self.index['C_m'],
+                    self.index['sigw_m'],
+                    self.index['x0_m'],
+                    self.index['sigx0_m'],
+                ]
+            ]
+            if self.mass
+            else [None] * 5
+        )
 
         self._update_matrix(self.A, self.B, Hi_w, Ho_w, Hb_w, H_m, Cv, As)
 
@@ -199,7 +230,7 @@ class Parametric_RC(RCModel):
             A[0, 0] -= Hi_w[loc]
             A[0, i + 1] += Hi_w[loc]
             A[i + 1, 0] += Hi_w[loc]
-            A[i + 1, i + 1] -= (Hi_w[loc] + Ho_w[loc])
+            A[i + 1, i + 1] -= Hi_w[loc] + Ho_w[loc]
             B[i + 1, i] = Ho_w[loc]
 
         for loc, i in enumerate(self.light_walls):
@@ -221,19 +252,14 @@ class Parametric_RC(RCModel):
         return A, B
 
     def update_continuous_dssm(self):
-        (
-            _,
-            C_i,
-            _,
-            _,
-            _,
-            *unpack,
-        ) = self.parameters.theta
+        (_, C_i, _, _, _, *unpack,) = self.parameters.theta
         Ho_w = [unpack[i] for i in self.index['Ho_w']]
         Hi_w = [unpack[i] for i in self.index['Hi_w']]
         Hb_w = [unpack[i] for i in self.index['Hb_w']]
         C_w = [unpack[i] for i in self.index['C_w']]
-        H_m, C_m = [unpack[i] for i in [self.index['H_m'], self.index['C_m']]] if self.mass else [None] * 2
+        H_m, C_m = (
+            [unpack[i] for i in [self.index['H_m'], self.index['C_m']]] if self.mass else [None] * 2
+        )
         Cv = [unpack[i] for i in self.index['Cv']]
         As = [unpack[i] for i in self.index['As']]
 
@@ -241,13 +267,19 @@ class Parametric_RC(RCModel):
         A, B = self._update_matrix(
             np.zeros((self.nx, self.nx)),
             np.zeros((self.nx, self.nu)),
-            Hi_w, Ho_w, Hb_w, H_m, Cv, As)
-        self.dA['C_i'][0, :] = - A[0, :] / (C_i ** 2)
-        self.dB['C_i'][0, :] = - B[0, :] / (C_i ** 2)
+            Hi_w,
+            Ho_w,
+            Hb_w,
+            H_m,
+            Cv,
+            As,
+        )
+        self.dA['C_i'][0, :] = -A[0, :] / (C_i ** 2)
+        self.dB['C_i'][0, :] = -B[0, :] / (C_i ** 2)
 
         for loc, i in enumerate(self.heavy_walls):
-            self.dA['C_w%d' % i][i + 1, :] = - A[i + 1, :] / (C_w[loc] ** 2)
-            self.dB['C_w%d' % i][i + 1, :] = - B[i + 1, :] / (C_w[loc] ** 2)
+            self.dA['C_w%d' % i][i + 1, :] = -A[i + 1, :] / (C_w[loc] ** 2)
+            self.dB['C_w%d' % i][i + 1, :] = -B[i + 1, :] / (C_w[loc] ** 2)
 
             self.dA['Hi_w%d' % i][0, 0] = -1 / C_i
             self.dA['Hi_w%d' % i][0, i + 1] = 1 / C_i
@@ -262,8 +294,8 @@ class Parametric_RC(RCModel):
             self.dB['Hb_w%d' % i][0, i] = 1 / C_i
 
         if self.mass:
-            self.dA['C_m'][-1, :] = - A[-1, :] / (C_m ** 2)
-            self.dB['C_m'][-1, :] = - B[-1, :] / (C_m ** 2)
+            self.dA['C_m'][-1, :] = -A[-1, :] / (C_m ** 2)
+            self.dB['C_m'][-1, :] = -B[-1, :] / (C_m ** 2)
 
             self.dA['H_m'][0, 0] = -1 / C_i
             self.dA['H_m'][0, -1] = 1 / C_i
