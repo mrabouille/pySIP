@@ -13,8 +13,8 @@ class TwTi_HoHi(RCModel):
     ]
 
     params = [
-        ('THERMAL_TRANSMITANCE', 'Ho', 'between the outdoor and the wall node'),
-        ('THERMAL_TRANSMITANCE', 'Hi', 'between the wall node and the indoor'),
+        ('THERMAL_TRANSMITTANCE', 'Ho', 'between the outdoor and the wall node'),
+        ('THERMAL_TRANSMITTANCE', 'Hi', 'between the wall node and the indoor'),
         ('THERMAL_CAPACITY', 'Cw', 'Wall'),
         ('THERMAL_CAPACITY', 'Ci', 'indoor air, indoor walls, furnitures, etc. '),
         ('STATE_DEVIATION', 'sigw_w', ''),

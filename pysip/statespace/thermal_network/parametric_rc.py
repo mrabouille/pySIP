@@ -65,12 +65,12 @@ class Parametric_RC(RCModel):
             self.params.extend(
                 [
                     (
-                        'THERMAL_TRANSMITANCE',
+                        'THERMAL_TRANSMITTANCE',
                         'Ho_w%d' % i,
                         'between the boundary %d and the wall node' % i,
                     ),
                     (
-                        'THERMAL_TRANSMITANCE',
+                        'THERMAL_TRANSMITTANCE',
                         'Hi_w%d' % i,
                         'between the wall %d node and the indoor' % i,
                     ),
@@ -102,7 +102,7 @@ class Parametric_RC(RCModel):
         light_w_count = len(self.light_walls)
         for i in self.light_walls:
             self.params.append(
-                ('THERMAL_TRANSMITANCE', 'Hb_w%d' % i, 'between the boundary %d and the indoor' % i)
+                ('THERMAL_TRANSMITTANCE', 'Hb_w%d' % i, 'between the boundary %d and the indoor' % i)
             )
             self.parameters.append(_p.get('Hb_w%d' % i, {**_p['Hb_w'], 'name': 'Hb_w%d' % i}))
         self.index['Hb_w'] = [6 * heavy_w_count + i for i in range(light_w_count)]
@@ -110,7 +110,7 @@ class Parametric_RC(RCModel):
         if self.mass:
             self.params.extend(
                 [
-                    ('THERMAL_TRANSMITANCE', 'H_m', 'between the indoor and the internal mass'),
+                    ('THERMAL_TRANSMITTANCE', 'H_m', 'between the indoor and the internal mass'),
                     ('THERMAL_CAPACITY', 'C_m', 'of the internal mass'),
                     ('STATE_DEVIATION', 'sigw_m', ''),
                     ('INITIAL_MEAN', 'x0_m', ''),
